@@ -1,0 +1,109 @@
+.navbar {
+    position: fixed;
+    height: 100vh;
+    width: 200px;
+    left: 0;
+    top: 0;
+    background-color: #ffffff;
+}
+
+.whiteNavBar {
+    display: flex;
+    margin-top: 20px;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    width: 199px;
+    left: 0;
+    top: 0;
+    background-color: #ffffff;
+}
+
+.navButtons {
+    width: 173px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-left: 10px;
+}
+
+.navButtonsBox{
+    margin-top: 20px;
+    width: 100%;
+}
+
+.greySpacingBar{
+    position: fixed;
+    height: 100vh;
+    width: 1px;
+    left: 199px;
+    top: 0;
+    background-color: #E0E0E0;
+}
+
+
+.headerbar {
+    position: fixed;
+    width: calc(100vw - 200px);
+    height: 100px;
+    top: 0;
+    left: 200px;
+    display: flex;
+    background-color: #ffffff;
+    justify-content: center;
+    align-items: center;
+}
+
+.headerspacingbar {
+    position: fixed;
+    background-color: #E0E0E0;
+    width: calc(100vw - 200px);
+    top: 99px;
+    height: 1px;
+}
+
+.searchbar {
+    grid-area: 1 / 1 / 2 / 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profilebar {
+    grid-area: 1 / 2 / 2 / 3;
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    gap: 30px;
+}
+
+.mainbar {
+    position: absolute;
+    top: 100px;
+    left:  200px;
+    width: calc(100vw - 200px);
+    background-color: #ffffff;
+}
+
+.searchinput {
+    height: 45px;
+}
+
+.searchicon {
+    background-color: #ffffff;
+    border-radius: 100%;
+    width: 25px;
+    height: 25px;
+    color: #000000;
+}
+
+.searchbutton {
+    width: 35px;
+    height: 35px;
+}
+
+.searchbutton:hover {
+    background-color: #f4f4f4;
+}
+

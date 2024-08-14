@@ -1,0 +1,347 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Gender {
+  FEMALE
+  MALE
+  DIVERSE
+}
+
+enum Occupation {
+  STUDENT
+  WORKING
+  RETIRED
+  UNEMPLOYED
+}
+
+model User {
+  userId     Int        @id @default(autoincrement())
+  username   String     @unique
+  email      String     @unique
+  age        Int
+  gender     Gender?
+  occupation Occupation
+  bio        String?
+  password   String
+  salt       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @db.Timestamp
+
+  interests           InterestOfUser[]
+  notifications       Notification[]
+  previousTrips       PreviousTrip[]
+  sendInvitations     TripInvitation[]    @relation(name: "send")
+  recievedInvitations TripInvitation[]    @relation(name: "recieve")
+  Trips               UserOnTrip[]
+  matchQuestionaires  MatchQuestionaire[]
+  groupQuestionaires  GroupQuestionaire[]
+
+  followed IsFriendOf[] @relation(name: "user")
+  follower IsFriendOf[] @relation(name: "friend")
+}
+
+model IsFriendOf {
+  user           User     @relation(name: "user", fields: [userId], references: [userId])
+  userId         Int
+  friendOfUser   User     @relation(name: "friend", fields: [friendOfUserId], references: [userId])
+  friendOfUserId Int
+  updatedAt      DateTime @db.Timestamp
+  createdAt      DateTime @default(now())
+
+  @@id([friendOfUserId, userId])
+}
+
+model PreviousTrip {
+  previousTripId Int      @id @default(autoincrement())
+  rating         Int
+  budget         Int
+  startDate      DateTime
+  endDate        DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @db.Timestamp
+
+  user   User @relation(fields: [userId], references: [userId])
+  userId Int
+
+  destination   Destination? @relation(fields: [destinationId], references: [destinationId])
+  destinationId Int?
+
+  keywords KeywordsOfPreviousTrip[]
+}
+
+model Activity {
+  activityId Int @id @default(autoincrement())
+
+  title                    String
+  description              String?
+  address                  String?
+  website                  String?
+  openingHours             String?
+  price                    Int?
+  duration                 Int?
+  reachablePublicTransport Boolean?
+  category                 String?
+
+  trips ActivityOnTrip[]
+}
+
+model Destination {
+  destinationId Int    @id @default(autoincrement())
+  city          String
+  keywords      String
+  country       String
+  latitude      Float?
+  longitude     Float?
+  image         String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trips         Trip[]
+  previousTrips PreviousTrip[]
+}
+
+enum Status {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model TripInvitation {
+  invitationId Int    @id @default(autoincrement())
+  status       Status
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userSend   User @relation(fields: [userSendId], references: [userId], name: "send")
+  userSendId Int
+
+  userRecieve   User @relation(fields: [userRecieveId], references: [userId], name: "recieve")
+  userRecieveId Int
+
+  trip   Trip @relation(fields: [tripId], references: [tripId])
+  tripId Int
+}
+
+enum PlanningStage {
+  DESTINATION_SEARCH
+  ACTIVITIES_SEARCH
+  FINISHED
+}
+
+model Trip {
+  tripId    Int      @id @default(autoincrement())
+  name      String
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+
+  planningStage PlanningStage
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activities         ActivityOnTrip[]
+  Users              UserOnTrip[]
+  invitations        TripInvitation[]
+  notifications      Notification[]
+  groupQuestionaires GroupQuestionaire[]
+
+  destination   Destination? @relation(fields: [destinationId], references: [destinationId])
+  destinationId Int?
+}
+
+enum NotificationType {
+  NEW_TRIP
+  NEW_STAGE
+  FINISHED
+  NEW_MATCH
+}
+
+model Notification {
+  notificationId   Int              @id @default(autoincrement())
+  notificationType NotificationType
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [userId])
+  userId Int
+
+  trip   Trip @relation(fields: [tripId], references: [tripId])
+  tripId Int
+}
+
+model Interest {
+  interestId Int    @id @default(autoincrement())
+  interest   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users InterestOfUser[]
+}
+
+model KeywordPreviousTrip {
+  keywordPreviousTripId Int    @id @default(autoincrement())
+  keyword               String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trips KeywordsOfPreviousTrip[]
+}
+
+model InterestOfUser {
+  user       User     @relation(fields: [userId], references: [userId])
+  userId     Int
+  interest   Interest @relation(fields: [interestId], references: [interestId])
+  interestId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([userId, interestId])
+}
+
+model ActivityOnTrip {
+  trip       Trip     @relation(fields: [tripId], references: [tripId])
+  tripId     Int
+  activity   Activity @relation(fields: [activityId], references: [activityId])
+  activityId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([tripId, activityId])
+}
+
+model UserOnTrip {
+  trip   Trip @relation(fields: [tripId], references: [tripId])
+  tripId Int
+  user   User @relation(fields: [userId], references: [userId])
+  userId Int
+
+  personalState Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([tripId, userId])
+}
+
+model KeywordsOfPreviousTrip {
+  trip                  PreviousTrip        @relation(fields: [previousTripId], references: [previousTripId])
+  previousTripId        Int
+  keywordPreviousTrip   KeywordPreviousTrip @relation(fields: [keywordPreviousTripId], references: [keywordPreviousTripId])
+  keywordPreviousTripId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([previousTripId, keywordPreviousTripId])
+}
+
+enum DayNightType {
+  EARLYBIRD
+  NIGHTOWL
+  FLEXIBLE
+}
+
+enum TravelPace {
+  FAST
+  MEDIUM
+  SLOW
+}
+
+enum GroupSize {
+  SMALL
+  MEDIUM
+  BIG
+}
+
+model MatchQuestionaire {
+  MatchQuestionaireId Int @id @default(autoincrement())
+
+  startDate DateTime
+  endDate   DateTime
+
+  reliabilityRating     Int
+  flexibilityRating     Int
+  organizationRating    Int
+  sociabilityRating     Int
+  sharedInterestsRating Int
+  daynightPreference    DayNightType
+  travelPacePreference  TravelPace
+  foodPreference        Int
+  groupSizePreference   GroupSize
+
+  budget Int
+
+  destination1       String
+  destinationRating1 Int
+
+  destination2       String
+  destinationRating2 Int
+
+  destination3       String
+  destinationRating3 Int
+
+  hobbies        Int[]
+  accomondations String[]
+  travelStyles   String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User @relation(fields: [userId], references: [userId])
+  userId Int
+}
+
+model GroupQuestionaire {
+  groupQuestionaireId Int @id @default(autoincrement())
+
+  budget Int
+
+  destination1       String
+  destinationRating1 Int
+
+  destination2       String
+  destinationRating2 Int
+
+  destination3       String
+  destinationRating3 Int
+
+  hobbies        Int[]
+  accomondations String[]
+  travelStyles   String[]
+
+  user   User @relation(fields: [userId], references: [userId])
+  userId Int
+
+  trip   Trip @relation(fields: [tripId], references: [tripId])
+  tripId Int
+}
+
+model Hobby {
+  hobbyId Int    @id @default(autoincrement())
+  hobby   String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
